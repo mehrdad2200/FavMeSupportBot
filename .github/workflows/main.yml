@@ -1,1 +1,30 @@
 
+name: FavMe Welcome Bot Service
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # هر ۱۵ دقیقه چک می‌کنه که اگه خاموش شده، دوباره روشن شه
+  workflow_dispatch: # دکمه اجرای دستی
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Telethon
+        run: pip install telethon
+
+      - name: Start Welcome Bot
+        timeout-minutes: 350 # حداکثر زمان اجرای گیت‌هاب (حدود ۶ ساعت)
+        env:
+          API_ID: ${{ secrets.API_ID }}
+          API_HASH: ${{ secrets.API_HASH }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: python main.py
