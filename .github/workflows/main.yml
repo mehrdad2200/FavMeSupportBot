@@ -1,10 +1,9 @@
-
-name: FavMe Welcome Bot Service
+name: Group Welcome Bot Service
 
 on:
   schedule:
-    - cron: '*/15 * * * *' # هر ۱۵ دقیقه چک می‌کنه که اگه خاموش شده، دوباره روشن شه
-  workflow_dispatch: # دکمه اجرای دستی
+    - cron: '*/15 * * * *' # هر ۱۵ دقیقه چک می‌کند که اگر ربات خاموش شده، دوباره روشن شود
+  workflow_dispatch: # اجازه اجرای دستی از تب Actions
 
 jobs:
   run-bot:
@@ -18,11 +17,11 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install Telethon
+      - name: Install Dependencies
         run: pip install telethon
 
-      - name: Start Welcome Bot
-        timeout-minutes: 350 # حداکثر زمان اجرای گیت‌هاب (حدود ۶ ساعت)
+      - name: Start Bot
+        timeout-minutes: 350 # حداکثر زمانی که گیت‌هاب اجازه می‌دهد (حدود ۶ ساعت)
         env:
           API_ID: ${{ secrets.API_ID }}
           API_HASH: ${{ secrets.API_HASH }}
