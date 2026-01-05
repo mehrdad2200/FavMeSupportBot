@@ -1,12 +1,17 @@
 import os, asyncio, sys
 from telethon import TelegramClient, events
+from telethon.errors import ApiIdInvalidError, TokenInvalidError
 
 # تنظیمات
-API_ID = int(os.getenv('API_ID', 0))
+API_ID = os.getenv('API_ID', '')
 API_HASH = os.getenv('API_HASH', '')
 BOT_TOKEN = os.getenv('BOT_TOKEN', '')
 
-# استفاده از None برای اجرای مستقیم در حافظه
+# تمیز کردن مقادیر (حذف فاصله‌های احتمالی)
+API_ID = int(API_ID.strip()) if API_ID.strip().isdigit() else 0
+API_HASH = API_HASH.strip()
+BOT_TOKEN = BOT_TOKEN.strip()
+
 client = TelegramClient(None, API_ID, API_HASH)
 
 print("--- STARTING BOT ---")
@@ -33,33 +38,32 @@ async def group_handler(event):
 اگه دوست داشتی، خودت رو هم معرفی کن.
 ✨ به گروه 'A Beautiful Mind' خوش اومدی"""
 
-        goodbye_text = "دیدم رفتی، گفتم بگم: چرا؟ 😄\nبه‌هرحال ممنون از همراهی‌ت، سلامت باشی."
-
         if event.user_joined or event.user_added:
             sent_msg = await event.reply(welcome_text)
             await asyncio.sleep(300)
             await sent_msg.delete()
         elif event.user_left:
-            sent_msg = await client.send_message(event.chat_id, goodbye_text)
+            sent_msg = await client.send_message(event.chat_id, "خداحافظ...")
             await asyncio.sleep(300)
             await sent_msg.delete()
     except Exception as e:
-        print(f"Error in Event: {e}")
+        print(f"Error: {e}")
 
 async def main():
-    print("Connecting to Telegram...")
+    print(f"Checking Connection for API_ID: {API_ID}...")
     sys.stdout.flush()
     try:
-        # با timeout ۱۰ ثانیه که اگر وصل نشد معطل نمانی
-        await asyncio.wait_for(client.start(bot_token=BOT_TOKEN), timeout=30)
-        print("✅ ✅ ✅ BOT IS ONLINE NOW!")
-        sys.stdout.flush()
-        await client.run_until_disconnected()
-    except asyncio.TimeoutError:
-        print("❌ ERROR: Connection Timeout! Check your API_ID and BOT_TOKEN.")
+        await client.start(bot_token=BOT_TOKEN)
+        print("✅ ✅ ✅ BOT IS ONLINE!")
+    except ApiIdInvalidError:
+        print("❌ ERROR: API_ID or API_HASH is wrong!")
+    except TokenInvalidError:
+        print("❌ ERROR: BOT_TOKEN is wrong!")
     except Exception as e:
-        print(f"❌ ERROR: {e}")
+        print(f"❌ UNKNOWN ERROR: {e}")
+    
     sys.stdout.flush()
+    await client.run_until_disconnected()
 
 if __name__ == '__main__':
     asyncio.run(main())
