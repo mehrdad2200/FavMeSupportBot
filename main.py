@@ -1,23 +1,22 @@
 import os, asyncio, sys
 from telethon import TelegramClient, events
 
-# تنظیمات از Secrets
+# تنظیمات
 API_ID = int(os.getenv('API_ID', 0))
 API_HASH = os.getenv('API_HASH', '')
 BOT_TOKEN = os.getenv('BOT_TOKEN', '')
 
-# ساخت کلاینت با نام سشن جدید برای رفع قفل شدگی
-client = TelegramClient('favme_session_new', API_ID, API_HASH)
+# استفاده از None برای اجرای مستقیم در حافظه
+client = TelegramClient(None, API_ID, API_HASH)
 
 print("--- STARTING BOT ---")
-sys.stdout.flush() # اجبار گیت‌هاب به نمایش لاگ
+sys.stdout.flush()
 
 @client.on(events.ChatAction)
 async def group_handler(event):
     try:
         user = await event.get_user()
-        if not user or user.bot:
-            return
+        if not user or user.bot: return
 
         welcome_text = f"""سلام {user.first_name} عزیز
 یه توضیح کوتاه اول کار: این پیام به‌صورت اتوماتیک توسط بات تلگرام و کدهای پایتون ارسال شده، پس اگه جواب ندادم بدون یا آفلاینم یا خوابم یا به تلگرام دسترسی ندارم.
@@ -34,27 +33,33 @@ async def group_handler(event):
 اگه دوست داشتی، خودت رو هم معرفی کن.
 ✨ به گروه 'A Beautiful Mind' خوش اومدی"""
 
-        goodbye_text = "دیدم رفتی، گفتم بگم: چرا؟ 😄\nشوخی شوخی…\nبه‌هرحال ممنون از همراهی‌ت، سلامت باشی."
+        goodbye_text = "دیدم رفتی، گفتم بگم: چرا؟ 😄\nبه‌هرحال ممنون از همراهی‌ت، سلامت باشی."
 
         if event.user_joined or event.user_added:
             sent_msg = await event.reply(welcome_text)
             await asyncio.sleep(300)
             await sent_msg.delete()
-
         elif event.user_left:
             sent_msg = await client.send_message(event.chat_id, goodbye_text)
             await asyncio.sleep(300)
             await sent_msg.delete()
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error in Event: {e}")
 
 async def main():
     print("Connecting to Telegram...")
     sys.stdout.flush()
-    await client.start(bot_token=BOT_TOKEN)
-    print("✅ BOT IS ONLINE!")
+    try:
+        # با timeout ۱۰ ثانیه که اگر وصل نشد معطل نمانی
+        await asyncio.wait_for(client.start(bot_token=BOT_TOKEN), timeout=30)
+        print("✅ ✅ ✅ BOT IS ONLINE NOW!")
+        sys.stdout.flush()
+        await client.run_until_disconnected()
+    except asyncio.TimeoutError:
+        print("❌ ERROR: Connection Timeout! Check your API_ID and BOT_TOKEN.")
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
     sys.stdout.flush()
-    await client.run_until_disconnected()
 
 if __name__ == '__main__':
     asyncio.run(main())
