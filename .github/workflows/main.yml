@@ -2,8 +2,13 @@ name: Group Welcome Bot Service
 
 on:
   schedule:
-    - cron: '*/15 * * * *' # هر ۱۵ دقیقه چک می‌کند که اگر ربات خاموش شده، دوباره روشن شود
-  workflow_dispatch: # اجازه اجرای دستی از تب Actions
+    - cron: '*/15 * * * *' # هر ۱۵ دقیقه چک می‌کند ربات روشن باشد
+  workflow_dispatch: # اجازه اجرای دستی
+
+# جلوگیری از اجرای همزمان دو ربات (حل مشکل پیام تکراری)
+concurrency:
+  group: welcome-bot-group
+  cancel-in-progress: true
 
 jobs:
   run-bot:
@@ -21,7 +26,7 @@ jobs:
         run: pip install telethon
 
       - name: Start Bot
-        timeout-minutes: 350 # حداکثر زمانی که گیت‌هاب اجازه می‌دهد (حدود ۶ ساعت)
+        timeout-minutes: 350
         env:
           API_ID: ${{ secrets.API_ID }}
           API_HASH: ${{ secrets.API_HASH }}
