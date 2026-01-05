@@ -1,25 +1,24 @@
 import os, asyncio
 from telethon import TelegramClient, events
 
-# تنظیمات امنیتی (مقادیر از GitHub Secrets خوانده می‌شوند)
+# تنظیمات از Secrets گیت‌هاب
 API_ID = int(os.getenv('API_ID', 0))
 API_HASH = os.getenv('API_HASH', '')
 BOT_TOKEN = os.getenv('BOT_TOKEN', '')
 
 # راه‌اندازی ربات
-client = TelegramClient('favme_bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
+client = TelegramClient('favme_bot', API_ID, API_HASH)
 
-print("🚀 FavMe Bot is Running Securely...")
+print("🚀 FavMe Bot is Starting with Full Text...")
 
 @client.on(events.ChatAction)
 async def group_handler(event):
     try:
         user = await event.get_user()
-        # نادیده گرفتن ربات‌ها
         if not user or user.bot:
             return
 
-        # --- متن خوش‌آمدگویی اختصاصی مهرداد ---
+        # --- متن خوش‌آمدگویی اختصاصی تو ---
         welcome_text = f"""سلام {user.first_name} عزیز
 
 یه توضیح کوتاه اول کار: این پیام به‌صورت اتوماتیک توسط بات تلگرام و کدهای پایتون ارسال شده، پس اگه جواب ندادم بدون یا آفلاینم یا خوابم یا به تلگرام دسترسی ندارم.
@@ -40,33 +39,41 @@ async def group_handler(event):
 اگه دوست داشتی، خودت رو هم معرفی کن.
 ✨ به گروه 'A Beautiful Mind' خوش اومدی"""
 
-        # --- متن خداحافظی اختصاصی مهرداد ---
+        # --- متن خداحافظی اختصاصی تو ---
         goodbye_text = f"""دیدم رفتی، گفتم بگم: چرا؟ 😄
 شوخی شوخی…
 به‌هرحال ممنون از همراهی‌ت، سلامت باشی."""
 
-        # ۱. مدیریت ورود (Join)
+        # اگر کسی وارد شد
         if event.user_joined or event.user_added:
-            # ارسال پیام به صورت ریپلای روی کاربر
             sent_msg = await event.reply(welcome_text)
-            print(f"✅ خوش‌آمدگویی ارسال شد. حذف خودکار تا ۵ دقیقه دیگر...")
-            
-            # انتظار برای ۵ دقیقه (۳۰۰ ثانیه)
-            await asyncio.sleep(300)
+            print(f"✅ خوش‌آمدگویی برای {user.first_name} ارسال شد.")
+            await asyncio.sleep(300) # انتظار ۵ دقیقه
             await sent_msg.delete()
             print("🗑️ پیام خوش‌آمدگویی پاک شد.")
 
-        # ۲. مدیریت خروج (Leave)
+        # اگر کسی خارج شد
         elif event.user_left:
             sent_msg = await client.send_message(event.chat_id, goodbye_text)
-            print(f"👋 خداحافظی ارسال شد. حذف خودکار تا ۵ دقیقه دیگر...")
-            
-            await asyncio.sleep(3000)
+            print(f"👋 خداحافظی برای {user.first_name} ارسال شد.")
+            await asyncio.sleep(300)
             await sent_msg.delete()
             print("🗑️ پیام خداحافظی پاک شد.")
 
     except Exception as e:
-        print(f"❌ خطا در عملیات: {e}")
+        print(f"❌ خطا: {e}")
 
-# زنده نگه داشتن ربات
-client.run_until_disconnected()
+async def main():
+    await client.start(bot_token=BOT_TOKEN)
+    
+    # قطع کردن بقیه سشن‌ها برای جلوگیری از پیام تکراری
+    try:
+        await client.sign_out_elsewhere()
+    except:
+        pass
+        
+    print("✅ ربات مهرداد آنلاین شد.")
+    await client.run_until_disconnected()
+
+if __name__ == '__main__':
+    asyncio.run(main())
